@@ -1,0 +1,12 @@
+foobar.
+foo(bar).
+foo(test).
+
+fib(0, 0).
+fib(1, 1).
+fib(A, D) :-
+	B is A-1,
+	C is A-2,
+	fib(B, E), !,
+	fib(C, F), !,
+	D is E+F.

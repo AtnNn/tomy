@@ -1,0 +1,114 @@
+Tomy, the Prolog bot
+Copyright (C) 2007-2011 Etienne Laurin (etienne@atnnn.com)
+http://www.atnnn.com/tomy/
+
+I DECLINE ALL RESPONSIBILITY FOR ANYTHING THAT RESULTS FROM THE USE OF
+THIS PROGRAM. PLEASE READ THE SAFETY WARNINGS. USE AT YOUR OWN RISK.
+
+Tomy is a bot that provides users of an IRC channel with a limited
+SWI-Prolog environment.  It's name is short for Lobotomy.
+
+Tomy is available from
+
+http://www.atnnn.com/tomy/
+
+To run Tomy, edit the first few predicates of bot.prolog to adjust the
+configuration, and add a server/4 predicate such as:
+
+server(irc.freenode.net, 6667, 'Tomy', '##prolog')
+
+Then run the bot using SWI-Prolog:
+
+pl -F none -s bot.prolog -g run_bot
+
+SWI-Prolog is available from 
+
+http://www.swi-prolog.org/
+
+The bot was tested with SWI-Prolog 5.10.4. The bundled
+allowed-predicates file was made specifically for that version of
+SWI-Prolog. If you use an older version of SWI-Prolog, you might need
+to uncomment maplist/2, I also suggest that you check the changelog
+and adapt the allowed predicates accordingly.
+
+The bot tries not to flood the channel. It chomps long lines
+mercilessly and limits the number of lines of output that are
+displayed at once.
+
+The bot already knows most of what SWI-Prolog does, along with a few
+extra predicates:
+
+<AtnNn> ?- help
+<Tomy> I am Tomy, the Prolog IRC bot (http://www.atnnn.com/tomy)
+
+<AtnNn> ?- help(write)
+<Tomy> | write(+Term)
+<Tomy> |     Write  Term  to the  current output,  using  brackets and  operators
+<Tomy> (4 more lines)
+<Tomy> Yes
+
+<AtnNn> ?- apropos(output)
+<Tomy> | open_null_stream/1            Open a stream to discard output
+<Tomy> | tell/1                        Change current output stream
+<Tomy> (15 more lines)
+<Tomy> Yes
+<AtnNn> ?- more
+<Tomy> | telling/1                     Query current output stream
+<Tomy> | told/0                        Close current output
+<Tomy> | set_output/1                  Set current output stream from a stream
+<Tomy> (12 more lines)
+
+<AtnNn> ?- listing(append/3)
+<Tomy> | append([], A, A).
+<Tomy> | append([A|B], C, [A|D]) :-
+<Tomy> |         append(B, C, D).
+<Tomy> Yes
+
+The bot will assert one-line clauses addressed to tomy:
+
+<AtnNn> tomy: fib(0,0).
+<AtnNn> tomy: fib(1,1).
+<AtnNn> tomy: fib(N, X) :- Y is N-1, Z is N-2, fib(Y, A), !, fib(Z, B), !, X is A+B.
+<AtnNn> ?- fib(10,N).
+<Tomy> N=55, Yes
+
+There is a default timeout of three seconds:
+
+<AtnNn> ?- fib(100,N)
+<Tomy> Time limit exceeded
+
+It will also retry previous clauses:
+
+<AtnNn> ?- between(1,2,X).
+<Tomy> X=1
+<AtnNn> ;
+<Tomy> X=2, Yes
+
+Another way to add clauses to the bot is to edit the stored-predicates
+file. It can contain normal clauses or :- followed by a goal to be
+executed.
+
+Additional functionality has been implemented, such as google search:
+
+<AtnNn> ?- google gprolog
+<Tomy> | http://www.gprolog.org/ - This compiler accepts Prolog + constraint programs and produces native binaries.   The obtained executable is subsequently stand-alone.
+<Tomy> | http://www.gprolog.org/manual/gprolog.html - The main role of the gprolog command is to execute the top-level itself, i.e. to   execute the built-in predicate top_level/0 (section 7.18.1) which will ...
+<Tomy> (8 more lines)
+<Tomy> Yes
+
+The allowed-predicates file lists all the predicates that IRC users
+can use. If the arguments to some predicates are goals that might get
+called, those arguments should be listed as #, and other arguments
+should be _. This is mandatory for the code to be safe, because the
+code walker needs these annotations to be able to properly rewrite the
+terms. For similar reasons, predicates that produce output should be
+preceded by +. Predicates with no '#' can be written as Name/Arity.
+
+SAFETY WARNING:
+
+After the terms are re-written, they are executed natively by
+SWI-Prolog. Malicious users might find a way to exploit this to try to
+make swi-prolog perform harmful goals. I strongly recommend that you
+rely on other safety measures when running the bot on a public
+channel, such as running the bot in a chroot with limited
+permissions.
